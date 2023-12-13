@@ -15,13 +15,20 @@ const state = {
 
 const add = (a, b) => a + b;
 const subtract = (a, b) => a - b;
-const multiply = (a, b) => a * b;
+const multiply = (a, b) => Math.floor(a * b * 100) / 100;
 const divide = (a, b) => {
   if (b === 0) {
     state.error = "ERROR: divide by 0";
     return null;
   }
   return Math.floor((a / b) * 100) / 100; // round to 2 decimal
+};
+
+const convertNumber = (s) => {
+  if (s.includes(".")) {
+    return Number.parseFloat(s);
+  }
+  return Number.parseFloat(s, 10);
 };
 
 function operate(a, b, op) {
@@ -54,6 +61,7 @@ function initCal() {
   for (let key in state) {
     state[key] = "";
   }
+  decimalBtn.removeAttribute("disabled");
   display("Hello");
 }
 
@@ -80,6 +88,7 @@ numberBtns.forEach((btn) =>
 
 operatorBtns.forEach((btn) => {
   btn.addEventListener("click", (event) => {
+    decimalBtn.removeAttribute("disabled");
     if (state.error) {
       initCal();
       return;
@@ -100,8 +109,8 @@ operatorBtns.forEach((btn) => {
     }
     if (state.operandA && state.operandB && state.operator) {
       const result = operate(
-        Number.parseInt(state.operandA, 10),
-        Number.parseInt(state.operandB, 10),
+        convertNumber(state.operandA),
+        convertNumber(state.operandB),
         state.operator
       );
       state.operandA = typeof result === "string" ? "" : result.toString();
@@ -113,6 +122,7 @@ operatorBtns.forEach((btn) => {
 });
 
 equalBtn.addEventListener("click", (event) => {
+  decimalBtn.setAttribute("disabled", true);
   if (state.error) {
     initCal();
     return;
@@ -129,13 +139,24 @@ equalBtn.addEventListener("click", (event) => {
   }
   if (state.operandA && state.operandB && state.operator) {
     const result = operate(
-      Number.parseInt(state.operandA, 10),
-      Number.parseInt(state.operandB, 10),
+      convertNumber(state.operandA),
+      convertNumber(state.operandB),
       state.operator
     );
     state.operandA = typeof result === "string" ? "" : result.toString();
     state.operandB = "";
     state.operator = "";
     display(result);
+  }
+});
+
+decimalBtn.addEventListener("click", (event) => {
+  event.target.setAttribute("disabled", true);
+  if (state.operator) {
+    state.operandB = state.operandB + ".";
+    display(state.operandB);
+  } else {
+    state.operandA = state.operandA + ".";
+    display(state.operandA);
   }
 });
