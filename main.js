@@ -249,5 +249,8 @@ document.addEventListener("keydown", (event) => {
     case "Backspace":
       backspaceBtn.dispatchEvent(clickEvent);
       break;
+    case "Enter":
+      equalBtn.dispatchEvent(clickEvent);
+      break;
   }
 });
