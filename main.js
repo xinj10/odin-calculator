@@ -1,18 +1,16 @@
-const displayElem = document.querySelector(".display");
 const numberBtns = document.querySelectorAll(".number");
 const operatorBtns = document.querySelectorAll(".operator");
+const decimalBtn = document.querySelector(".decimal");
+const backspaceBtn = document.querySelector(".backspace");
 const equalBtn = document.querySelector(".equal");
 const clearBtn = document.querySelector(".clear");
-
-let operandA = "";
-let operandB = "";
-let operator = "";
+const displayElem = document.querySelector(".display");
 
 const state = {
-  a: false, //operand A
-  b: false, // operand B
-  o: false, //operator
-  e: false, // if it's in error state
+  operandA: "",
+  operandB: "",
+  operator: "",
+  error: "",
 };
 
 const add = (a, b) => a + b;
@@ -20,8 +18,8 @@ const subtract = (a, b) => a - b;
 const multiply = (a, b) => a * b;
 const divide = (a, b) => {
   if (b === 0) {
-    state.e = true;
-    return "ERROR: divide by 0";
+    state.error = "ERROR: divide by 0";
+    return null;
   }
   return Math.floor((a / b) * 100) / 100; // round to 2 decimal
 };
@@ -42,7 +40,8 @@ function operate(a, b, op) {
       result = divide(a, b);
       break;
     default:
-      result = "ERROR: unknown operator";
+      state.error = "ERROR: unknown operator";
+      result = null;
   }
   return result;
 }
@@ -52,13 +51,9 @@ function display(displayValue) {
 }
 
 function initCal() {
-  state.a = false;
-  state.b = false;
-  state.o = false;
-  state.e = false;
-  operandA = "";
-  operandB = "";
-  operator = "";
+  for (let key in state) {
+    state[key] = "";
+  }
   display("Hello");
 }
 
@@ -66,30 +61,18 @@ clearBtn.addEventListener("click", initCal);
 
 numberBtns.forEach((btn) =>
   btn.addEventListener("click", (event) => {
-    if (state.e) {
+    if (state.error) {
       initCal();
       return;
     }
-    if (!state.a && !state.b && !state.o) {
-      state.a = true;
-      operandA = operandA + event.target.textContent;
-      display(operandA);
+    if (!state.operandB && !state.operator) {
+      state.operandA = state.operandA + event.target.textContent;
+      display(state.operandA);
       return;
     }
-    if (state.a && !state.b && !state.o) {
-      operandA = operandA + event.target.textContent;
-      display(operandA);
-      return;
-    }
-    if (state.a && !state.b && state.o) {
-      operandB = operandB + event.target.textContent;
-      state.b = true;
-      display(operandB);
-      return;
-    }
-    if (state.a && state.b && state.o) {
-      operandB = operandB + event.target.textContent;
-      display(operandB);
+    if (state.operandA && state.operator) {
+      state.operandB = state.operandB + event.target.textContent;
+      display(state.operandB);
       return;
     }
   })
@@ -97,72 +80,62 @@ numberBtns.forEach((btn) =>
 
 operatorBtns.forEach((btn) => {
   btn.addEventListener("click", (event) => {
-    if (state.e) {
+    if (state.error) {
       initCal();
       return;
     }
-    if (!state.a && !state.b && !state.o) {
-      display("ERROR: invalid input");
-      state.e = true;
+    if (!state.operandA && !state.operandB && !state.operator) {
+      state.error = "ERROR: invalid input";
+      display(state.error);
       return;
     }
-    if (state.a && !state.b && !state.o) {
-      state.o = true;
-      operator = event.target.textContent;
+    if (state.operandA && !state.operandB && state.operator) {
+      state.error = "ERROR: invalid input";
+      display(state.error);
       return;
     }
-    if (state.a && !state.b && state.o) {
-      display("ERROR: invalid input");
-      state.e = true;
+    if (state.operandA && !state.operandB && !state.operator) {
+      state.operator = event.target.textContent;
       return;
     }
-    if (state.a && state.b && state.o) {
+    if (state.operandA && state.operandB && state.operator) {
       const result = operate(
-        Number.parseInt(operandA, 10),
-        Number.parseInt(operandB, 10),
-        operator
+        Number.parseInt(state.operandA, 10),
+        Number.parseInt(state.operandB, 10),
+        state.operator
       );
-      operandA = typeof result === "string" ? "" : result.toString();
-      state.a = true;
-      opertor = event.target.textContent;
-      state.o = true;
-      operandB = "";
-      state.b = false;
+      state.operandA = typeof result === "string" ? "" : result.toString();
+      state.operator = event.target.textContent;
+      state.operandB = "";
       display(result);
     }
   });
 });
 
 equalBtn.addEventListener("click", (event) => {
-  if (state.e) {
+  if (state.error) {
     initCal();
     return;
   }
-  if (!state.a && !state.b && !state.o) {
-    display("ERROR: invalid input");
-    state.e = true;
+  if (!state.operandA && !state.operandB && !state.operator) {
+    state.error = "ERROR: invalid input";
+    display(state.error);
     return;
   }
-  if (state.a && !state.b && !state.o) {
+  if (state.operandA && !state.operandB && state.operator) {
+    state.error = "ERROR: invalid input";
+    display(state.error);
     return;
   }
-  if (state.a && !state.b && state.o) {
-    display("ERROR: invalid input");
-    state.e = true;
-    return;
-  }
-  if (state.a && state.b && state.o) {
+  if (state.operandA && state.operandB && state.operator) {
     const result = operate(
-      Number.parseInt(operandA, 10),
-      Number.parseInt(operandB, 10),
-      operator
+      Number.parseInt(state.operandA, 10),
+      Number.parseInt(state.operandB, 10),
+      state.operator
     );
-    operandA = typeof result === "string" ? "" : result.toString();
-    state.a = true;
-    operandB = "";
-    state.b = false;
-    operator = "";
-    state.o = false;
+    state.operandA = typeof result === "string" ? "" : result.toString();
+    state.operandB = "";
+    state.operator = "";
     display(result);
   }
 });
