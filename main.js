@@ -160,3 +160,22 @@ decimalBtn.addEventListener("click", (event) => {
     display(state.operandA);
   }
 });
+
+backspaceBtn.addEventListener("click", (event) => {
+  if (state.error) {
+    initCal();
+    return;
+  }
+  if (state.operandB) {
+    state.operandB = state.operandB.slice(0, -1);
+    display(state.operandB);
+    if (!state.operandB.includes(".")) decimalBtn.removeAttribute("disabled");
+  } else if (state.operandA && !state.operator) {
+    state.operandA = state.operandA.slice(0, -1);
+    display(state.operandA);
+    if (!state.operandA.includes(".")) decimalBtn.removeAttribute("disabled");
+  } else {
+    return;
+  }
+  return;
+});
